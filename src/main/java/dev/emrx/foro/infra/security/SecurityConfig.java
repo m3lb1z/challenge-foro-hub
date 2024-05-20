@@ -27,7 +27,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.POST, "/login").permitAll())
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/topicos/**").hasAnyRole("ADMIN", "USER"))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/cursos/**").hasRole("ADMIN")
+                        .requestMatchers("/usuarios/**").hasRole("ADMIN"))
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

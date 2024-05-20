@@ -28,7 +28,7 @@ public class Usuario implements UserDetails {
     private String correo;
     private String contrasena;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "usuarios_perfiles",
             joinColumns = @JoinColumn(name = "usuario_id"),
@@ -38,23 +38,22 @@ public class Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-//        String[] roles = perfiles.stream()
-//                .map(Perfil::getNombre)
-//                .toArray(String[]::new);
-//
-//        return grantedAuthorities(roles);
-        return List.of();
+        String[] roles = perfiles.stream()
+                .map(Perfil::getNombre)
+                .toArray(String[]::new);
+
+        return grantedAuthorities(roles);
     }
 
-//    private List<GrantedAuthority> grantedAuthorities(String[] roles) {
-//        List<GrantedAuthority> authorities = new ArrayList<>(roles.length);
-//
-//        for (String rol : roles) {
-//            authorities.add(new SimpleGrantedAuthority("ROLE_" + rol));
-//        }
-//
-//        return authorities;
-//    }
+    private List<GrantedAuthority> grantedAuthorities(String[] roles) {
+        List<GrantedAuthority> authorities = new ArrayList<>(roles.length);
+
+        for (String rol : roles) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + rol));
+        }
+
+        return authorities;
+    }
 
     @Override
     public String getPassword() {
