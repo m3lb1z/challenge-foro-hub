@@ -41,7 +41,7 @@ public class TopicoService {
     }
 
     @Transactional(readOnly = true)
-    public List<TopicoResponse> obtenerTodosLosTopicos() {
+    public List<TopicoResponse> listarTopicos() {
         return temaRepository.findAll().stream()
                 .map(TopicoResponse::new)
                 .collect(Collectors.toList());
@@ -50,7 +50,7 @@ public class TopicoService {
     @Transactional
     public TopicoResponse guardarTopico(DatosCrearTopico datos) {
         validadores.forEach(validador -> validador.validar(datos));
-        Curso curso = existeCurso(datos.nombreCurso());
+        Curso curso = obtenerCursoPorNombre(datos.nombreCurso());
         Usuario usuario = existeUsuario(datos.usuarioId());
 
         Topico tema = Topico.builder()
@@ -65,27 +65,22 @@ public class TopicoService {
         return new TopicoResponse(temaRepository.save(tema));
     }
 
-    private Curso existeCurso(String nombreCurso) {
-        Curso curso = cursoRepository.findByNombre(nombreCurso)
+    private Curso obtenerCursoPorNombre(String nombreCurso) {
+        return cursoRepository.findByNombre(nombreCurso)
                 .orElseThrow(() -> new ValidacionDeIntegridad("El curso no existe"));
-        return curso;
     }
 
     private Usuario existeUsuario(Long usuarioId) {
-        Usuario usuario = usuarioRepository.getReferenceById(usuarioId);
-        if(usuario == null)
-            throw new ValidacionDeIntegridad("El usuario no existe");
-
-        return usuario;
+        return usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ValidacionDeIntegridad("El usuario no existe"));
     }
 
     @Transactional
     public TopicoResponse actualizarTopico(Long id, DatosActualizarTopico datos) {
-        validadores.forEach(
-            validador -> validador.validar(new DatosCrearTopico(null, datos.titulo(), datos.mensaje(), datos.nombreCurso()))
-        );
-
+        DatosCrearTopico temporal = new DatosCrearTopico(null, datos.titulo(), datos.mensaje(), datos.nombreCurso());
+        validadores.forEach(validador -> validador.validar(temporal));
         Optional<Topico> topicoBuscado = temaRepository.findById(id);
+
         if(topicoBuscado.isPresent()) {
             Topico tema = topicoBuscado.get();
             if(datos.titulo() != null)
@@ -93,7 +88,7 @@ public class TopicoService {
             if(datos.mensaje() != null)
                 tema.setMensaje(datos.mensaje());
             if(datos.nombreCurso() != null) {
-                Curso curso = existeCurso(datos.nombreCurso());
+                Curso curso = obtenerCursoPorNombre(datos.nombreCurso());
                 tema.setCurso(curso);
             }
 
@@ -105,7 +100,6 @@ public class TopicoService {
 
     @Transactional
     public void eliminarTopico(Long id) {
-        existeUsuario(id);
         temaRepository.deleteById(id);
     }
 
