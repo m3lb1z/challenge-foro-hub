@@ -5,7 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @NoArgsConstructor
@@ -14,7 +19,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "usuarios")
-public class Usuario {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,4 +36,53 @@ public class Usuario {
     )
     private List<Perfil> perfiles;
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        String[] roles = perfiles.stream()
+//                .map(Perfil::getNombre)
+//                .toArray(String[]::new);
+//
+//        return grantedAuthorities(roles);
+        return List.of();
+    }
+
+//    private List<GrantedAuthority> grantedAuthorities(String[] roles) {
+//        List<GrantedAuthority> authorities = new ArrayList<>(roles.length);
+//
+//        for (String rol : roles) {
+//            authorities.add(new SimpleGrantedAuthority("ROLE_" + rol));
+//        }
+//
+//        return authorities;
+//    }
+
+    @Override
+    public String getPassword() {
+        return contrasena;
+    }
+
+    @Override
+    public String getUsername() {
+        return correo;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
